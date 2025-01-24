@@ -6,13 +6,17 @@ import (
 
 	"urlshorten/internal/handlers"
 	"urlshorten/internal/store"
+	"urlshorten/internal/utils"
 )
 
 func main() {
-	store.InitStore()
-	http.HandleFunc("/shorten", handlers.ShortenURL)
-	http.HandleFunc("/stats/", handlers.GetStats)
-	http.HandleFunc("/", handlers.RedirectURL)
+
+	store := store.NewStore()
+	context := &utils.AppContext{Store: store}
+
+	http.Handle("/shorten", utils.AppHandler{Context: context, Handler: handlers.ShortenURL})
+	http.Handle("/stats/", utils.AppHandler{Context: context, Handler: handlers.GetStats})
+	http.Handle("/", utils.AppHandler{Context: context, Handler: handlers.RedirectURL})
 
 	log.Println("URL Shortener service is running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

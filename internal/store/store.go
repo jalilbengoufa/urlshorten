@@ -2,10 +2,11 @@ package store
 
 import "sync"
 
-var DataStore *sync.Map
-var DataStoreStat *sync.Map
+type Store struct {
+	Codes *sync.Map
+	Stats *sync.Map
+}
 
-func InitStore() {
-	DataStore = new(sync.Map)
-	DataStoreStat = new(sync.Map)
+func NewStore() *Store {
+	return &Store{Codes: new(sync.Map), Stats: new(sync.Map)}
 }

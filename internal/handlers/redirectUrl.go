@@ -3,14 +3,14 @@ package handlers
 import (
 	"net/http"
 	"strings"
-	"urlshorten/internal/store"
+	"urlshorten/internal/utils"
 )
 
-func RedirectURL(w http.ResponseWriter, r *http.Request) {
+func RedirectURL(context *utils.AppContext, w http.ResponseWriter, r *http.Request) (int, error) {
 
 	if r.Method != "GET" {
 		http.Error(w, "Method Invalid: "+r.Method, http.StatusBadRequest)
-		return
+		return 400, nil
 	}
 
 	path := r.URL.Path
@@ -18,22 +18,23 @@ func RedirectURL(w http.ResponseWriter, r *http.Request) {
 
 	if shortcode == "" {
 		http.Error(w, "Shortcode not provided", http.StatusBadRequest)
-		return
+		return 400, nil
 	}
 
-	urlFound, ok := store.DataStore.Load(shortcode)
+	urlFound, ok := context.Store.Codes.Load(shortcode)
 	if ok {
 
-		nbRedirect, ok := store.DataStoreStat.Load(shortcode)
+		nbRedirect, ok := context.Store.Stats.Load(shortcode)
 		if !ok {
 			http.Error(w, "Shortcode not found", http.StatusNotFound)
-			return
+			return 400, nil
 		}
 		intNbRedirect, _ := nbRedirect.(int)
 		url, _ := urlFound.(string)
-		store.DataStoreStat.Store(shortcode, intNbRedirect+1)
+		context.Store.Stats.Store(shortcode, intNbRedirect+1)
 		http.Redirect(w, r, url, http.StatusPermanentRedirect)
 
 	}
+	return 200, nil
 
 }

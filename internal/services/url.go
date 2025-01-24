@@ -1,9 +1,9 @@
-package service
+package services
 
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"urlshorten/internal/store"
+	"urlshorten/internal/utils"
 )
 
 func generateRandomBytes(n int) ([]byte, error) {
@@ -21,7 +21,7 @@ func generateRandomString(s int) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), err
 }
 
-func GenerateShortCode() (code string, err error) {
+func GenerateShortCode(context *utils.AppContext) (code string, err error) {
 
 	for {
 
@@ -30,7 +30,7 @@ func GenerateShortCode() (code string, err error) {
 			return "", err
 		}
 
-		_, ok := store.DataStore.Load(code)
+		_, ok := context.Store.Codes.Load(code)
 		if !ok {
 			return code, nil
 		}

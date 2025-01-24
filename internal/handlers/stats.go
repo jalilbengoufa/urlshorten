@@ -4,17 +4,17 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-	"urlshorten/internal/store"
+	"urlshorten/internal/utils"
 )
 
 type StatResponse struct {
 	StatFound int `json:"statFound"`
 }
 
-func GetStats(w http.ResponseWriter, r *http.Request) {
+func GetStats(context *utils.AppContext, w http.ResponseWriter, r *http.Request) (int, error) {
 	if r.Method != "GET" {
 		http.Error(w, "Method Invalid: "+r.Method, http.StatusBadRequest)
-		return
+		return 400, nil
 	}
 
 	path := r.URL.Path
@@ -22,14 +22,15 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 
 	if shortcode == "" {
 		http.Error(w, "Shortcode not provided", http.StatusBadRequest)
-		return
+		return 400, nil
 	}
-	statFound, ok := store.DataStoreStat.Load(shortcode)
+	statFound, ok := context.Store.Stats.Load(shortcode)
 	intStatFound, _ := statFound.(int)
 	if ok {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(StatResponse{StatFound: intStatFound})
 
 	}
+	return 200, nil
 
 }
